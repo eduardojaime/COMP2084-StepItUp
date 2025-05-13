@@ -1,0 +1,21 @@
+﻿@model IEnumerable<Category>
+
+@{
+    ViewData["Title"] = "Select a Category";
+}
+
+<h1>Pick a Category to find your Footwear</h1>
+<section class="row card-group">
+ @foreach (var category in Model)
+ {
+    <article class="col-lg-4">
+        <div class="card mb-6 text-center h-150">
+                <h4>
+                    <a asp-action="Category" asp-route-id="@category.CategoryId">
+                        @category.Name
+                    </a>
+                </h4>
+        </div>       
+    </article>
+}
+</section>
