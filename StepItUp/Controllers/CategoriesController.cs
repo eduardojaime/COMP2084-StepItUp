@@ -19,5 +19,10 @@ namespace StepItUp.Controllers
             // show the view and pass it the mock data list for display
             return View(categories);
         }
+
+        public IActionResult Create()
+        {
+            return View();
+        }
     }
 }
