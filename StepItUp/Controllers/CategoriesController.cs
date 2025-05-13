@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using StepItUp.Models;
 
 namespace StepItUp.Controllers
 {
@@ -7,9 +8,16 @@ namespace StepItUp.Controllers
         public IActionResult Index()
         {
             // make a mock list of categories & pass to view for display
+            var categories = new List<Category>();
 
+            // populate mock list
+            for (var i = 1; i < 16; i++)
+            {
+                categories.Add(new Category { CategoryId = i, Name = "Category " + i.ToString() });
+            }
 
-            return View();
+            // show the view and pass it the mock data list for display
+            return View(categories);
         }
     }
 }
