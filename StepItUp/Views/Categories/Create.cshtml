@@ -1,11 +1,13 @@
-﻿@{
+﻿@model Category;
+
+@{
     ViewData["Title"] = "Add new Category";
 }
 <h1>Add new Category</h1>
-<form>
+<form method="post">
     <fieldset>
         <label>Name: *</label>
-        <input name="name" required />
+        <input name="Name" asp-for="Name" required />
     </fieldset>
     <button class="btn btn-primary offset-2">Save</button>
 </form>

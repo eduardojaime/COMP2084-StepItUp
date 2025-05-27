@@ -11,5 +11,7 @@ public class ApplicationDbContext : IdentityDbContext
     {
     }
 
-public DbSet<StepItUp.Models.Product> Product { get; set; } = default!;
+    // DbSets for CRUD operations for each controller
+    public DbSet<StepItUp.Models.Product> Product { get; set; } = default!;
+    public DbSet<Category> Category { get; set; } = default!;
 }
