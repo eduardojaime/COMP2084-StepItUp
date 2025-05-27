@@ -24,5 +24,14 @@ namespace StepItUp.Controllers
         {
             return View();
         }
+
+        [HttpPost]
+        public IActionResult Create([Bind("Name")] Category category)
+        {
+            // use db connection to save new category
+
+            // redirect to category list
+            return RedirectToAction("Index");
+        }
     }
 }
