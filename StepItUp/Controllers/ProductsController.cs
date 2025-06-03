@@ -49,16 +49,55 @@ namespace StepItUp.Controllers
             return RedirectToAction("Index");
         }
 
-        public IActionResult Edit()
+        // GET: populate edit form so we can modify a product
+        public IActionResult Edit(int id)
         {
+            // fetch selected product from db
+            var product = _context.Product.Find(id);
+
+            // fetch category list & select right category for dropdown
+            ViewData["CategoryId"] = new SelectList(_context.Category.OrderBy(c => c.Name).ToList(),
+                "CategoryId", "Name", product.CategoryId);
+
             // show populated form to edit a product
-            return View();
+            return View(product);
         }
 
-        public IActionResult Delete()
+        // POST: update selected product w/changes from form
+        [HttpPost]
+        public IActionResult Edit(int id, [Bind("ProductId,Name,Description,Size,Price,Colour,Photo,CategoryId")] Product product)
         {
+            // save new product to db
+            _context.Product.Update(product);
+            _context.SaveChanges();
+
+            // redirect to products Index to see updated list
+            return RedirectToAction("Index");
+        }
+
+        // GET: // show delete confirmation page w/product details
+        public IActionResult Delete(int id)
+        {
+            // fetch selected product
+            var product = _context.Product.Find(id);
+
             // show confirmation page before deleting product
-            return View();
+            return View(product);
+        }
+
+        // POST: remove selected product
+        [HttpPost, ActionName("Delete")]
+        public IActionResult DeleteConfirmed(int id)
+        {
+            // fetch selected product
+            var product = _context.Product.Find(id);
+
+            // remove from
+            _context.Product.Remove(product);
+            _context.SaveChanges();
+
+            // redirect to products Index to see updated list
+            return RedirectToAction("Index");
         }
     }
 }
