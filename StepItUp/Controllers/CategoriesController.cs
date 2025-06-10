@@ -1,9 +1,12 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using StepItUp.Data;
 using StepItUp.Models;
 
 namespace StepItUp.Controllers
 {
+    // restrict access to all methods in this controller to Adminstrator users only
+    [Authorize(Roles = "Administrator")]
     public class CategoriesController : Controller
     {
         // db connection instance at class level => available to all methods in controller
@@ -16,6 +19,7 @@ namespace StepItUp.Controllers
             _context = context;
         }
 
+        // [AllowAnonymous] => overrides access restrictions and makes this method public
         public IActionResult Index()
         {
             //// make a mock list of categories & pass to view for display
