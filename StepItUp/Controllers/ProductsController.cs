@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using StepItUp.Data;
@@ -6,6 +7,8 @@ using StepItUp.Models;
 
 namespace StepItUp.Controllers
 {
+    // restrict all methods to Administrator role only
+    [Authorize(Roles = "Administrator")]
     public class ProductsController : Controller
     {
         // class-level db conn
