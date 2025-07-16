@@ -1,4 +1,55 @@
-﻿@{
+﻿<!-- Indicate what datatype you are expecting as the model for this view -->
+@model IEnumerable<StepItUp.Models.Product>
+@{
     ViewData["Title"] = "Shop for " + ViewData["Category"];
 }
 <h1>Shop for @ViewData["Category"]</h1>
+
+<!-- Show a list of products -->
+<section class="row card-group">
+    <!-- Use Model to access the list -->
+    @foreach (var product in Model)
+    {
+        <div class="col-lg-4 mb-3">
+            <div class="card mb-4">
+                <div class="card-body text-center h-100">
+                    <!-- Name as a link to show details page
+                         TODO: Add a details method in ProductsController -->
+                    <a asp-controller="Products" asp-action="Details" asp-route-id="@product.ProductId">
+                        @product.Name
+                    </a>
+                    <!-- Price as string inside a heading element formatted as currency -->
+                    <h6>@product.Price.ToString("C")</h6>
+                    <!-- Photo as image element with class thumbnail -->
+                    @if (!string.IsNullOrEmpty(product.Photo))
+                    {
+                        <img src="~/img/products/@product.Photo" 
+                            class="img-thumbnail"
+                            style="max-width: 250px"
+                        />
+                    }
+                    <!-- Button to add to cart inside form element -->
+                    <form method="post" action="/Shop/AddToCart">
+                        <!-- hidden input field to store product id -->
+                        <input type="hidden" id="ProductId" value="@product.ProductId" />
+                        <!-- quantity input field with a label -->
+                        <div>
+                            <label class="form-control" for="Quantity">Quantity: </label>
+                            <input 
+                                    class="form-control" 
+                                    type="number"
+                                    name="Quantity"
+                                    id="Quantity"
+                                    min="1"
+                                    max="999"
+                                    />
+                        </div>
+                        <!-- button to send post -->
+                        <button class="btn btn-primary">Add to Cart</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    }
+</section>
+

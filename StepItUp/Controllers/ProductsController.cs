@@ -102,5 +102,19 @@ namespace StepItUp.Controllers
             // redirect to products Index to see updated list
             return RedirectToAction("Index");
         }
+
+        // GET /Products/Details/id (public method)
+        [AllowAnonymous]
+        public IActionResult Details(int id) {
+            // fetch selected product from db
+            var product = _context.Product.Find(id);
+
+            // fetch category list & select right category for dropdown
+            ViewData["CategoryId"] = new SelectList(_context.Category.OrderBy(c => c.Name).ToList(),
+                "CategoryId", "Name", product.CategoryId);
+
+            // show populated form to edit a product
+            return View(product);
+        }
     }
 }
