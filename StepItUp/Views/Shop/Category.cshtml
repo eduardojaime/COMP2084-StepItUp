@@ -31,7 +31,7 @@
                     <!-- Button to add to cart inside form element -->
                     <form method="post" action="/Shop/AddToCart">
                         <!-- hidden input field to store product id -->
-                        <input type="hidden" id="ProductId" value="@product.ProductId" />
+                        <input type="hidden" name="ProductId" id="ProductId" value="@product.ProductId" />
                         <!-- quantity input field with a label -->
                         <div>
                             <label class="form-control" for="Quantity">Quantity: </label>

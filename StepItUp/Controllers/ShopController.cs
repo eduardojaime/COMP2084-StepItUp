@@ -56,7 +56,7 @@ namespace StepItUp.Controllers
         public IActionResult AddToCart([FromForm] int ProductId, [FromForm] int Quantity)
         {
             // Who is buying? get userid or generate GUID for this session
-            var customerId = "GetCustomerId()"; // placeholder
+            var customerId = GetCustomerId(); // placeholder
 
             // Get product price
             // Find() returns a product object, access Price property too
@@ -79,7 +79,59 @@ namespace StepItUp.Controllers
             return RedirectToAction("Cart");
         }
 
-        // TODO: GET /Shop/Cart
+        // GET /Shop/Cart
+        public IActionResult Cart()
+        {
+            // retrieve customerId so I can filter cart items
+            var customerId = GetCustomerId();
+            // retrieve cart items associated to that customerid
+            var cartItems = _context.Cart                                   // SELECT * FROM Cart AS c
+                                .Where(c => c.CustomerId == customerId)     // WHERE c.CustomerId = @customerId
+                                .OrderByDescending(c => c.DateCreated)      // ORDER BY DateCreated DESC
+                                .ToList();
+            // return a view with the list of cart items
+            return View(cartItems);
+        }
 
+        public IActionResult RemoveFromCart(int id)
+        {
+            // find cart item
+            var cartItem = _context.Cart.Find(id);
+            // delete from context collection
+            _context.Cart.Remove(cartItem);
+            // save changes
+            _context.SaveChanges();
+            // redirect to cart
+            return RedirectToAction("Cart");
+        }
+
+        // TODO: Handle Checkout
+
+
+        // Helper Methods are Private
+        private string GetCustomerId()
+        {
+            var customerId = HttpContext.Session.GetString("CustomerId");
+            // check session store for value associated to this session
+            if (String.IsNullOrEmpty(customerId))
+            {
+                // there's nothing in the session yet
+                // determine whether user is authenticated (email) or not (GUID)
+                if (User.Identity.IsAuthenticated)
+                {
+                    customerId = User.Identity.Name; // email address
+                }
+                else
+                {
+                    customerId = Guid.NewGuid().ToString();
+                }
+
+                // store whichever customerId got created to session store
+                HttpContext.Session.SetString("CustomerId", customerId);
+            }
+
+            // return session value
+            return customerId;
+        }
     }
 }

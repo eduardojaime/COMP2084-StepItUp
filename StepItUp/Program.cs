@@ -26,6 +26,8 @@ builder.Services.AddAuthentication()
 
 
 builder.Services.AddControllersWithViews();
+// Enable Session Service
+builder.Services.AddSession();
 
 var app = builder.Build();
 
@@ -45,6 +47,8 @@ app.UseHttpsRedirection();
 app.UseRouting();
 
 app.UseAuthorization();
+// Enable Session Storage
+app.UseSession();
 
 app.MapStaticAssets();
 
