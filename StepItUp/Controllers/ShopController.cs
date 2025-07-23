@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using StepItUp.Data;
 using StepItUp.Models;
 
@@ -86,9 +88,15 @@ namespace StepItUp.Controllers
             var customerId = GetCustomerId();
             // retrieve cart items associated to that customerid
             var cartItems = _context.Cart                                   // SELECT * FROM Cart AS c
+                                .Include(c=> c.Product)                     // JOIN Product AS p ON c.ProductId = p.ProductId
                                 .Where(c => c.CustomerId == customerId)     // WHERE c.CustomerId = @customerId
                                 .OrderByDescending(c => c.DateCreated)      // ORDER BY DateCreated DESC
                                 .ToList();
+
+            // Calculate total amount for the entire transaction, return as a string formatted as currency
+            // ViewBag is a dynamic object that allows you to pass data to the view
+            // Property names are not strongly typed, and must match in the view
+            ViewBag.TotalAmount = cartItems.Sum(c => (c.Price * c.Quantity)).ToString("C");
             // return a view with the list of cart items
             return View(cartItems);
         }
@@ -105,7 +113,12 @@ namespace StepItUp.Controllers
             return RedirectToAction("Cart");
         }
 
-        // TODO: Handle Checkout
+        // GET /Shop/Checkout
+        [Authorize]
+        public IActionResult Checkout()
+        {
+            return View();
+        }
 
 
         // Helper Methods are Private
