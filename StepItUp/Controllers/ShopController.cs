@@ -228,7 +228,7 @@ namespace StepItUp.Controllers
                     Quantity = cartItem.Quantity,
                     Price = cartItem.Price
                 };
-                // Add to context
+                // Add to Database
                 _context.OrderItem.Add(orderItem);
                 // Clear cart
                 _context.Cart.Remove(cartItem);
