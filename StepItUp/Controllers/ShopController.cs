@@ -203,7 +203,40 @@ namespace StepItUp.Controllers
             return new StatusCodeResult(303);
         }
 
-        // TODO: SaveOrder
+        // GET /Shop/SaveOrder
+        public IActionResult SaveOrder()
+        {
+            // Get Order from Session
+            var order = HttpContext.Session.GetObject<Order>("Order");
+            // Get customer id
+            var customerId = GetCustomerId();
+            // Get cart items
+            var cartItems = _context.Cart
+                .Where(c => c.CustomerId == customerId)
+                .ToList();
+            // Save Order to database
+            _context.Order.Add(order);
+            _context.SaveChanges();
+            // Save Cart items to OrderItems table
+            foreach (var cartItem in cartItems)
+            {
+                // Create OrderItem object
+                var orderItem = new OrderItem
+                {
+                    OrderId = order.OrderId, // foreign key to Order table
+                    ProductId = cartItem.ProductId,
+                    Quantity = cartItem.Quantity,
+                    Price = cartItem.Price
+                };
+                // Add to context
+                _context.OrderItem.Add(orderItem);
+                // Clear cart
+                _context.Cart.Remove(cartItem);
+            }
+            _context.SaveChanges(); // persist changes to database
+            // Redirect to order details view
+            return RedirectToAction("Details", "Orders", new { @id = order.OrderId });
+        }
 
         // Helper Methods are Private
         private string GetCustomerId()
