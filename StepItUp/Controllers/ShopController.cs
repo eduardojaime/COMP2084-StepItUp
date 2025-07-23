@@ -3,6 +3,9 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using StepItUp.Data;
 using StepItUp.Models;
+using StepItUp.Extensions;
+using Stripe.Checkout;
+using Stripe;
 
 namespace StepItUp.Controllers
 {
@@ -10,11 +13,13 @@ namespace StepItUp.Controllers
     {
         // shared class-level db conn obj
         private readonly ApplicationDbContext _context;
+        private readonly IConfiguration _configuration; // << this is injected as a service in Program.cs
 
         // constructor w/db dependency
-        public ShopController(ApplicationDbContext context)
+        public ShopController(ApplicationDbContext context, IConfiguration configuration)
         {
             _context = context;
+            _configuration = configuration;
         }
 
         public IActionResult Index()
@@ -88,7 +93,7 @@ namespace StepItUp.Controllers
             var customerId = GetCustomerId();
             // retrieve cart items associated to that customerid
             var cartItems = _context.Cart                                   // SELECT * FROM Cart AS c
-                                .Include(c=> c.Product)                     // JOIN Product AS p ON c.ProductId = p.ProductId
+                                .Include(c => c.Product)                     // JOIN Product AS p ON c.ProductId = p.ProductId
                                 .Where(c => c.CustomerId == customerId)     // WHERE c.CustomerId = @customerId
                                 .OrderByDescending(c => c.DateCreated)      // ORDER BY DateCreated DESC
                                 .ToList();
@@ -120,6 +125,85 @@ namespace StepItUp.Controllers
             return View();
         }
 
+        [Authorize]
+        [HttpPost]
+        [ValidateAntiForgeryToken] // This reads a hash in the view that the app users to validate it
+        public IActionResult Checkout([Bind("FirstName, LastName, Address, Province, City, PostalCode")] Order order)
+        {
+            // Order already contains the values for the properties from the model binder
+            // Programmatically fill in the values for the Date, Total and CustomerId
+            order.DateCreated = DateTime.UtcNow;
+            order.CustomerId = GetCustomerId();
+            // Calculate total from cart items
+            var totalAmount = _context.Cart.Sum(c => (c.Price * c.Quantity));
+            order.Total = totalAmount;
+            // Store Order Object in Session store
+            HttpContext.Session.SetObject("Order", order);
+            // Send user to Payment page (that's where the stripe script is executed)
+            return RedirectToAction("Payment");
+        }
+
+        // GET /Shop/Payment
+        [Authorize]
+        public IActionResult Payment()
+        {
+            // Retrieve order total from session storage
+            var order = HttpContext.Session.GetObject<Order>("Order");
+            // Pass to view in ViewBag
+            ViewBag.TotalAmount = order.Total;
+            // Also pass Stripe key in ViewBag
+            // ????
+            // Render View
+            return View();
+        }
+
+
+        // POST /Shop/ProcessPayment
+        [Authorize]
+        [HttpPost]
+        public IActionResult ProcessPayment()
+        {
+            // Load Order and Secret Key
+            var order = HttpContext.Session.GetObject<Order>("Order");
+            StripeConfiguration.ApiKey = _configuration["Payments:Stripe:SecretKey"];
+
+            // Copy code from Create() method in Stripe Quickstart guide
+            // https://docs.stripe.com/checkout/quickstart
+
+            var domain = "https://" + Request.Host; // Returns whichever domain this app is running on
+            var options = new SessionCreateOptions
+            {
+                LineItems = new List<SessionLineItemOptions>
+                {
+                  new SessionLineItemOptions
+                  {
+                    // Pass total amount as a single item
+                    PriceData = new SessionLineItemPriceDataOptions
+                    {
+                        UnitAmountDecimal = (order.Total * 100),
+                        // UnitAmount = (order.Total * 100) as long?,
+                        Currency = "cad",
+                        ProductData = new SessionLineItemPriceDataProductDataOptions
+                        {
+                            Name = "StepItUp Online Purchase"
+                        }
+                    },
+                    Quantity = 1,
+                  },
+                },
+                Mode = "payment",
+                PaymentMethodTypes = new List<string> { "card" },
+                SuccessUrl = domain + "/Shop/SaveOrder",
+                CancelUrl = domain + "/Shop/Cart",
+            };
+            var service = new SessionService();
+            Session session = service.Create(options);
+
+            Response.Headers.Add("Location", session.Url);
+            return new StatusCodeResult(303);
+        }
+
+        // TODO: SaveOrder
 
         // Helper Methods are Private
         private string GetCustomerId()

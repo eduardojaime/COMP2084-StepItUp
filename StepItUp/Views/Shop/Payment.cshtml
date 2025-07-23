@@ -1,0 +1,13 @@
+﻿@{
+    ViewData["Title"] = "Confirm Payment Amount";
+}
+
+<h1>Confirm Payment Amount</h1>
+
+<h4>Order Total: @ViewBag.TotalAmount.ToString("C")</h4>
+
+<script src="https://js.stripe.com/basil/stripe.js"></script>
+
+<form action="/Shop/ProcessPayment" method="POST">
+    <button type="submit" id="checkout-button">Process Payment >></button>
+</form>
