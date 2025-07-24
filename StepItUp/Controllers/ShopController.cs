@@ -135,7 +135,9 @@ namespace StepItUp.Controllers
             order.DateCreated = DateTime.UtcNow;
             order.CustomerId = GetCustomerId();
             // Calculate total from cart items
-            var totalAmount = _context.Cart.Sum(c => (c.Price * c.Quantity));
+            var totalAmount = _context.Cart
+                .Where(c => c.CustomerId == order.CustomerId)
+                .Sum(c => (c.Price * c.Quantity));
             order.Total = totalAmount;
             // Store Order Object in Session store
             HttpContext.Session.SetObject("Order", order);
