@@ -28,6 +28,8 @@ builder.Services.AddAuthentication()
 builder.Services.AddControllersWithViews();
 // Enable Session Service
 builder.Services.AddSession();
+// Add Swagger/OpenAPI support
+builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 
@@ -49,6 +51,12 @@ app.UseRouting();
 app.UseAuthorization();
 // Enable Session Storage
 app.UseSession();
+// Enable Swagger UI
+app.UseSwagger();
+app.UseSwaggerUI(c =>
+{
+    c.SwaggerEndpoint("/swagger/v1/swagger.json", "StepItUp API V1");
+});
 
 app.MapStaticAssets();
 
